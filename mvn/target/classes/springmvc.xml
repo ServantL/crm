@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       https://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" />-->
+    <!--<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />-->
+
+    <!-- 组件扫描 -->
+    <context:component-scan base-package="cn.servant.crm.controller"/>
+
+    <!-- mvc驱动注解，添加validator校验器 -->
+    <mvc:annotation-driven validator="validator" conversion-service="converterService"></mvc:annotation-driven>
+
+    <!-- 配置转换器 -->
+    <bean id="converterService" class="org.springframework.format.support.FormattingConversionServiceFactoryBean">
+        <!-- 转换器 -->
+        <property name="converters">
+            <list>
+                <bean class="cn.servant.crm.controller.converter.DateConverter"></bean>
+            </list>
+        </property>
+    </bean>
+
+
+
+
+    <!-- 配置视图解析器 -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+
+    <!-- 定义文件上传解析器 -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <!-- 设置上传文件的最大尺寸为5MB -->
+        <property name="maxUploadSize">
+            <value>5242880</value>
+        </property>
+    </bean>
+
+
+    <!-- 配置校验器 -->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <!-- hibernate校验器 -->
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator"/>
+        <!-- 指定校验使用的资源文件 -->
+        <property name="validationMessageSource" ref="messageSource"/>
+    </bean>
+    <!-- 配置校验错误信息文件-->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <!-- 资源文件名 -->
+        <property name="basenames">
+            <list>
+                <value>classpath:validationMessage/customerValidationMessage</value>
+                <value>classpath:validationMessage/userValidationMessage</value>
+            </list>
+        </property>
+        <!-- 资源文件编码格式 -->
+        <property name="fileEncodings" value="utf-8"/>
+        <property name="defaultEncoding" value="UTF-8"/>
+        <!-- 对资源文件内容缓存时间，单位：秒 -->
+        <property name="cacheSeconds" value="120"/>
+    </bean>
+
+
+    <!-- 配置全局异常处理器，其class只要实现了HandlerExceptionResolver接口即可 -->
+    <bean id="handlerExceptionResolver" class="cn.servant.crm.exception.CrmExceptionResolver"/>
+
+    <!-- 配置拦截器 -->
+    <mvc:interceptors>
+        <!-- 当有多个拦截器时，按配置的顺序依次拦截 -->
+        <mvc:interceptor>
+            <!-- 拦截所有访问路径-->
+            <mvc:mapping path="/**"/>
+            <bean class="cn.servant.crm.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <!-- 拦截关于联系人的访问路径，因为此时的权限只有关于对联系人操作的限制 -->
+            <mvc:mapping path="/linkman/**"/>
+            <mvc:mapping path="/customer/deleteCustomer.action"/>
+            <mvc:mapping path="/customer/edit.action"/>
+            <bean class="cn.servant.crm.interceptor.RightsInterceptor"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <!-- 用于对影响到当前session中的user会产生的一些问题所以在此进行其session的更新 -->
+            <mvc:mapping path="/customer/insertCustomer.action"/>
+            <mvc:mapping path="/customer/deleteCustomer.action"/>
+            <mvc:mapping path="/linkman/updateLinkman.action"/>
+            <bean class="cn.servant.crm.interceptor.UpdateSessionInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+</beans>

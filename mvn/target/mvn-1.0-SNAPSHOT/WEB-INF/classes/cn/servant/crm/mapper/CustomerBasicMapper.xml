@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace命名空间，作用就是对sql进行分类化管理，理解sql隔离
+注意：使用mapper代理方法开发，namespace有特殊重要的作用
+-->
+<mapper namespace="cn.servant.crm.mapper.CustomerBasicMapper">
+
+
+    <!-- sql片段，根据条件拼接if -->
+    <sql id="select_customer_if">
+        <!-- 根据姓名进行模糊查询 -->
+        <if test="customer.customerBasic.custName != null and customer.customerBasic.custName.trim() != ''">
+            <!-- AND cust_name LIKE '%${customer.customerBasic.custName}%' -->
+            AND cust_name LIKE CONCAT('%',#{customer.customerBasic.custName},'%')
+        </if>
+        <if test="customer.customerBasic.custPhone != null and customer.customerBasic.custPhone.trim() != ''">
+            AND cust_phone = #{customer.customerBasic.custPhone}
+        </if>
+        <!-- 根据客户来源进行查询 -->
+        <!--<if test="customer.customerBasic.custSource != null and customer.customerBasic.custSource != ''">-->
+            <!--AND cust_source = #{customer.customerBasic.custSource}-->
+        <!--</if>-->
+        <if test="customer.customerBasic.custSource != null and customer.customerBasic.custSource.key.trim() != ''">
+            AND cust_source = #{customer.customerBasic.custSource.key}
+        </if>
+        <if test="customer.customerBasic.custIndustry != null and customer.customerBasic.custIndustry.key.trim() != ''">
+            AND cust_industry = #{customer.customerBasic.custIndustry.key}
+        </if>
+        <if test="customer.customerBasic.custLevel != null and customer.customerBasic.custLevel.key.trim() != ''">
+            AND cust_level = #{customer.customerBasic.custLevel.key}
+        </if>
+        <if test="customer.customerBasic.custLinkman != null">
+            <if test="customer.customerBasic.custLinkman.linkName != null and customer.customerBasic.custLinkman.linkName.trim() != ''">
+                AND link_name LIKE CONCAT('%',#{customer.customerBasic.custLinkman.linkName},'%')
+            </if>
+        </if>
+
+        <!-- 根据分页参数进行limit查询-->
+    </sql>
+
+    <!-- Customer映射的resultMap -->
+    <resultMap id="customerBasicResultMap" type="CustomerBasic">
+        <id column="cust_id" property="custId"/>
+        <result column="cust_name" property="custName"/>
+        <result column="cust_Sex" property="custSex"/>
+        <!--<result column="cust_level" property="custLevel"/>-->
+        <!--<result column="cust_source" property="custSource"/>-->
+        <!--<result column="cust_industry" property="custIndustry"/>-->
+        <result column="cust_phone" property="custPhone"/>
+        <result column="cust_visit_time" property="custVisitTime"/>
+        <association property="custLevel" javaType="map">
+            <result column="cust_level" property="key"/>
+            <result column="level_name" property="value"/>
+        </association>
+        <association property="custSource" javaType="map" >
+            <result column="cust_source" property="key"/>
+            <result column="source_name" property="value"/>
+        </association>
+        <association property="custIndustry" javaType="map">
+            <result column="cust_industry" property="key"/>
+            <result column="industry_name" property="value"/>
+        </association>
+        <association column="cust_link_id" property="custLinkman" javaType="Linkman"
+                     select="cn.servant.crm.mapper.LinkmanMapper.selectLinkmanById" />
+    </resultMap>
+
+
+
+    <!-- 根据id查询出客户的基本信息，用户修改客户信息 -->
+    <select id="selectCustomerBasicById" parameterType="int" resultMap="customerBasicResultMap">
+        SELECT customer_basic.*,source.dict_item_name source_name,industry.dict_item_name industry_name,levels.dict_item_name level_name
+        FROM customer_basic,dict source,dict industry,dict levels
+        WHERE cust_id = #{value} and cust_source = source.dict_id and cust_industry = industry.dict_id and cust_level = levels.dict_id
+    </select>
+
+    <!-- 插入客户的基本信息 -->
+    <insert id="insertCustomerBasic" parameterType="CustomerBasic"  useGeneratedKeys="true" keyProperty="custId" >
+        INSERT INTO customer_basic
+        VALUES(#{custId},#{custName},#{custSex},#{custLevel.key},
+        #{custLinkman.linkId},#{custSource.key},#{custIndustry.key},#{custPhone},#{custVisitTime})
+    </insert>
+
+    <!-- 删除客户的基本信息 -->
+    <delete id="deleteCustomerBasicById" parameterType="int">
+        DELETE FROM visit WHERE visit_cust_id = #{value};
+        DELETE FROM customer_basic WHERE cust_id = #{value};
+    </delete>
+
+    <!-- 根据条件查询的总记录数也不同 -->
+    <select id="getCustomerTotalCount" parameterType="CustomerVo" resultType="int">
+        SELECT count(*) FROM customer_basic,linkman
+        <where>
+            cust_link_id = link_id
+            <include refid="select_customer_if"></include>
+        </where>
+    </select>
+
+    <!-- 根据条件查询客户的基本信息 -->
+    <select id="selectCustomerByConditions" parameterType="CustomerVo"
+            resultMap="customerBasicResultMap">
+        SELECT customer_basic.*,source.dict_item_name source_name,industry.dict_item_name industry_name,link_name,levels.dict_item_name level_name
+        FROM customer_basic,dict source,dict industry,linkman,dict levels
+        <where>
+            cust_link_id = link_id and cust_source = source.dict_id and cust_industry = industry.dict_id and cust_level = levels.dict_id
+            <include refid="select_customer_if"></include>
+        </where>
+        <if test="page.sortField != null and page.sortField != ''">
+            ORDER BY CONVERT(${page.sortField} USING gbk) ${page.ascOrDesc}
+        </if>
+        LIMIT #{page.startIndex},#{page.pageSize}
+    </select>
+
+    <!-- 修改客户的基本信息 -->
+    <update id="updateCustomerBasic" parameterType="CustomerBasic">
+        UPDATE customer_basic
+        SET cust_name=#{custName} ,cust_sex=#{custSex},cust_level=#{custLevel.key},cust_link_id=#{custLinkman.linkId},
+        cust_source=#{custSource.key},cust_industry=#{custIndustry.key},cust_phone=#{custPhone},cust_visit_time=#{custVisitTime}
+        WHERE cust_id=#{custId}
+    </update>
+
+
+    <!-- 根据联系人的id查询客户信息，用于删除联系人给予提示以及迁移 -->
+    <select id="selectCustomerByLinkId" parameterType="int" resultMap="customerBasicResultMap">
+        SELECT customer_basic.*,source.dict_item_name,industry.dict_item_name,levels.dict_item_name
+        FROM customer_basic,dict source,dict industry,dict levels
+        WHERE cust_link_id = #{value} and cust_source = source.dict_id and cust_industry = industry.dict_id and cust_level = levels.dict_id
+    </select>
+
+    <!-- 根据客户的手机号码进行查询客户的信息，用于插入客户访问记录 -->
+    <select id="selectCustomerBasicByPhone" parameterType="String" resultMap="customerBasicResultMap">
+        SELECT customer_basic.*,source.dict_item_name source_name,industry.dict_item_name industry_name,levels.dict_item_name level_name
+        FROM customer_basic,dict source,dict industry,dict levels
+        WHERE  cust_phone = #{value} and cust_source = source.dict_id and cust_industry = industry.dict_id and cust_level = levels.dict_id
+    </select>
+
+    <!-- 根据原联系人的id和后联系人的id修改客户所属的联系人id，因为有两个参数所以用Map？ -->
+    <update id="removeCustomers" parameterType="map">
+        UPDATE customer_basic SET cust_link_id = (SElECT link_id FROM linkman WHERE link_id = #{newLinkId})
+        WHERE cust_link_id = #{oldLinkId}
+    </update>
+
+
+    <!-- 根据手机号码查询客户id，用户校验是否存在该手机客户 -->
+    <select id="selectCustomerIdByPhone" parameterType="String" resultType="int">
+        SELECT cust_id FROM customer_basic WHERE cust_phone = #{value}
+    </select>
+
+    <!-- 根据传入的类型代码进行条件查询并对查询出来的结果根据该类型的项进行分组 -->
+
+    <!-- 测试 -->
+    <!--<resultMap id="sourceMap" type="CustomerBasic">-->
+        <!--<id column="cust_id" property="custId"/>-->
+        <!--<result column="cust_name" property="custName"/>-->
+        <!--<association property="testSource" javaType="map" >-->
+            <!--<result property="key" column="cust_source_id"/>-->
+            <!--<result property="value" column="cust_source_name"/>-->
+        <!--</association>-->
+    <!--</resultMap>-->
+
+    <!--<select id="selectTest" resultMap="sourceMap">-->
+        <!--select customer_basic.*,source.dict_id cust_source_id, source.dict_item_name cust_source_name,industry.dict_item_name cust_industry_name from customer_basic,dict source,dict industry Where cust_source = source.dict_id and cust_industry = industry.dict_id and cust_id = 1-->
+    <!--</select>-->
+
+
+    <!--<select id="selectTest1" parameterType="map" resultMap="sourceMap">-->
+          <!--SELECT cust_id,cust_name,cust_source,cust_industry FROM customer_basic WHERE cust_id = #{1}-->
+    <!--</select>-->
+
+</mapper>
+

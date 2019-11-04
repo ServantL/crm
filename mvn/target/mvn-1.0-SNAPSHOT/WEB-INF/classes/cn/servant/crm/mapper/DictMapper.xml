@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.servant.crm.mapper.DictMapper">
+
+    <resultMap id="dictResultMap" type="cn.servant.crm.pojo.po.Dict">
+        <id property="dictId" column="dict_id"/>
+        <result property="dictTypeCode" column="dict_type_code"/>
+        <result property="dictTypeName" column="dict_type_name"/>
+        <result property="dictItemName" column="dict_item_name"/>
+    </resultMap>
+
+    <resultMap id="dictMap" type="map">
+        <result property="key" column="dict_id"/>
+        <result property="value" column="dict_item_name"/>
+    </resultMap>
+
+
+    <!-- 根据id查询对应的数据字典 -->
+    <select id="selectDictById" parameterType="int" resultMap="dictResultMap">
+        SELECT * FROM dict WHERE dict_id = #{value}
+    </select>
+
+
+    <!-- 根据类型代码（即dict_type_code）进行查询其id，即name，返回List<Map> -->
+    <select id="selectDictByTypeCode" parameterType="String" resultMap="dictMap">
+        SELECT dict_id,dict_item_name FROM dict WHERE dict_type_code = #{value}
+    </select>
+
+
+    <!-- 根据类型代码进行客户的分组统计 -->
+    <select id="selectDictToStatistic" parameterType="map" resultType="map">
+        SELECT dict_item_name statisticKey,count(*) statisticValue FROM customer_basic,dict WHERE ${statisticTypeName} = dict_id and dict_type_code = #{statisticTypeCode} group by dict_item_name
+    </select>
+
+    <!-- 根据类型代码查询类型名称 -->
+    <select id="selectTypeNameByCode" parameterType="String" resultType="String">
+        SELECT distinct dict_type_name FROM dict WHERE dict_type_code = #{value}
+    </select>
+
+</mapper>

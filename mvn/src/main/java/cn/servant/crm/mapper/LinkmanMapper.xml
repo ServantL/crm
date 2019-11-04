@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.servant.crm.mapper.LinkmanMapper">
+
+    <!-- sql片段，根据条件拼接if -->
+    <sql id="select_linkman_if">
+        <!-- 根据名字进行模糊查询 -->
+        <if test="linkman != null">
+            <if test="linkman.linkName != null and linkman.linkName.trim() != '' ">
+                <!-- AND link_name LIKE '%${linkman.linkName}%' -->
+                AND link_name LIKE CONCAT('%',#{linkman.linkName},'%')
+            </if>
+            <if test="linkman.linkPhone != null and linkman.linkPhone.trim() != ''">
+                AND link_phone = #{linkman.linkPhone}
+            </if>
+        </if>
+    </sql>
+
+    <!-- Linkman映射的resultMap -->
+    <resultMap id="linkmanResultMap" type="Linkman">
+        <id column="link_id" property="linkId"/>
+        <result column="link_name" property="linkName"/>
+        <result column="link_sex" property="linkSex"/>
+        <result column="link_phone" property="linkPhone"/>
+        <result column="link_email" property="linkEmail"/>
+        <result column="link_position" property="linkPosition"/>
+        <result column="link_memo" property="linkMemo"/>
+        <collection property="linkCustomerList" ofType="CustomerBasic"
+        select="cn.servant.crm.mapper.CustomerBasicMapper.selectCustomerByLinkId" column="link_id"/>
+    </resultMap>
+
+    <!-- 根据条件查询的总记录数也不同 -->
+    <select id="getLinkmanTotalCount" parameterType="LinkmanVo" resultType="int">
+        SELECT count(*) FROM linkman
+        <where>
+            <include refid="select_linkman_if"/>
+        </where>
+    </select>
+
+
+    <!-- 根据条件查询联系人 -->
+    <select id="selectLinkmanByConditions" parameterType="LinkmanVo"
+            resultMap="linkmanResultMap">
+        SELECT * FROM linkman
+        <where>
+            <include refid="select_linkman_if"></include>
+        </where>
+        <if test="page.sortField != null and page.sortField != ''">
+            ORDER BY CONVERT(${page.sortField} USING gbk) ${page.ascOrDesc}
+        </if>
+        LIMIT #{page.startIndex},#{page.pageSize}
+    </select>
+
+    <!-- 根据id进行查询联系人信息,用于修改页面以及客户的联合查询 -->
+    <select id="selectLinkmanById" parameterType="Integer" resultMap="linkmanResultMap">
+        SELECT * FROM linkman WHERE link_id = #{value}
+    </select>
+
+    <!-- 返回联系人及其对应的id，用于添加页面和编辑页面指定客户与联系人的对应关系 -->
+    <select id="selectLinkmanNameId" resultMap="linkmanResultMap">
+        SELECT link_id,link_name FROM linkman
+    </select>
+
+    <!-- 根据id删除联系人 -->
+    <delete id="deleteLinkmanById" parameterType="int">
+        DELETE FROM linkman WHERE link_id = #{value}
+    </delete>
+
+    <!-- 添加联系人 -->
+    <insert id="insertLinkman" parameterType="Linkman"  useGeneratedKeys="true" keyProperty="linkId">
+        INSERT INTO linkman
+        VALUES(#{linkId},#{linkName},#{linkSex},#{linkPhone},#{linkEmail},#{linkPosition},#{linkMemo})
+    </insert>
+
+    <!-- 修改联系人 -->
+    <update id="updateLinkman" parameterType="Linkman">
+        UPDATE linkman SET link_name=#{linkName},link_sex=#{linkSex},
+        link_phone=#{linkPhone},link_email=#{linkEmail},link_position=#{linkPosition},link_memo=#{linkMemo}
+        WHERE link_id=#{linkId}
+    </update>
+
+    <!-- 根据联系人名称查询其id，用与确认是否有输入的该联系人 -->
+    <select id="selectLinkmanIdByName" parameterType="String" resultType="int">
+        SELECT link_id FROM linkman WHERE link_name = #{linkName}
+    </select>
+
+    <!-- 根据手机号码查询客户id，用户校验是否存在该手机客户 -->
+    <select id="selectLinkmanIdByPhone" parameterType="String" resultType="int">
+        SELECT link_id FROM linkman WHERE link_phone = #{value}
+    </select>
+
+
+</mapper>

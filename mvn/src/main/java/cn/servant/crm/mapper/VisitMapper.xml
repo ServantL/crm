@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.servant.crm.mapper.VisitMapper">
+
+    <!-- sql片段，根据条件拼接if -->
+    <sql id="select_visit_if">
+        <!-- 联合查询，待考虑 -->
+        <if test="visit.visitCustomer != null">
+            <if test="visit.visitCustomer.custName != null and visit.visitCustomer.custName.trim() != ''">
+                AND visit_cust_id IN (SELECT cust_id FROM customer_basic WHERE cust_name LIKE CONCAT('%',#{visit.visitCustomer.custName},'%'))
+            </if>
+            <if test="visit.visitCustomer.custPhone != null and visit.visitCustomer.custPhone.trim() != ''">
+                AND visit_cust_id = (SELECT cust_id FROM customer_basic WHERE cust_phone = #{visit.visitCustomer.custPhone})
+            </if>
+            <if test="visit.visitCustomer.custVisitTime != null">
+                AND visit_cust_id IN (SELECT cust_id FROM customer_basic WHERE cust_visit_time = #{visit.visitCustomer.custVisitTime})
+            </if>
+        </if>
+        <if test="visit.visitDate != null">
+            AND Date(visit_date) = DATE_FORMAT(#{visit.visitDate},'%Y-%m-%d')
+        </if>
+
+    </sql>
+
+    <!-- Visit映射的resultMap -->
+    <resultMap id="visitResultMap" type="Visit">
+        <id column="visit_id" property="visitId"/>
+        <result column="visit_date" property="visitDate"/>
+        <association column="visit_cust_id" property="visitCustomer" javaType="CustomerBasic"
+                     select="cn.servant.crm.mapper.CustomerBasicMapper.selectCustomerBasicById"/>
+    </resultMap>
+
+    <!-- 有问题！！！！！！！！！！！！！！！！！！！！！！！！！！！ -->
+    <!-- 根据条件查询客户的访问记录 -->
+    <select id="selectVisitByConditions" parameterType="VisitVo" resultMap="visitResultMap" >
+        SELECT visit.*
+        <if test="page.sortField != null and page.sortField != ''"> ,${page.sortField} </if>
+        FROM visit,customer_basic,linkman
+        <where>
+            cust_id = visit_cust_id AND link_id = cust_link_id
+            <include refid="select_visit_if"/>
+        </where>
+        <choose>
+            <when test="page.sortField != null and page.sortField != ''">
+                ORDER BY CONVERT(${page.sortField} USING gbk) ${page.ascOrDesc}
+            </when>
+            <otherwise>
+                ORDER BY visit_date DESC
+            </otherwise>
+        </choose>
+        LIMIT #{page.startIndex},#{page.pageSize}
+    </select>
+
+    <!-- 根据条件查询查询的总记录数也不同 -->
+    <select id="getVisitTotalCount" parameterType="VisitVo" resultType="int">
+        SELECT COUNT(*) FROM visit
+        <where>
+            <include refid="select_visit_if"/>
+        </where>
+    </select>
+
+    <!-- 添加客户访问记录 -->
+    <insert id="insertVisit" parameterType="Visit">
+        INSERT INTO visit VALUES(#{visitId},#{visitDate},#{visitCustomer.custId})
+    </insert>
+
+</mapper>

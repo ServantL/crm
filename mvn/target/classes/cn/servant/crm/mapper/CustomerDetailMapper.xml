@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.servant.crm.mapper.CustomerDetailMapper">
+
+
+    <!-- CustomerDetail映射的resultMap -->
+    <resultMap id="customerDetailResultMap" type="CustomerDetail">
+        <id column="cust_id" property="custId"/>
+        <result column="cust_address" property="custAddress"/>
+        <result column="cust_region" property="custRegion"/>
+        <result column="cust_zip" property="custZip"/>
+        <result column="cust_website" property="custWebsite"/>
+        <result column="cust_licence" property="custLicence"/>
+        <result column="cust_corporation" property="custCorporation"/>
+        <result column="cust_capital" property="custCapital"/>
+        <result column="cust_bank" property="custBank"/>
+        <result column="cust_pic" property="custPic"/>
+        <result column="cust_memo" property="custMemo" />
+    </resultMap>
+
+
+    <!-- 根据客户id查询客户的详细信息 -->
+    <select id="selectCustomerDetailById" parameterType="int" resultMap="customerDetailResultMap">
+        SELECT * FROM customer_detail WHERE cust_id=#{value}
+    </select>
+
+
+    <!-- 插入客户的详细信息 -->
+    <insert id="insertCustomerDetail" parameterType="CustomerDetail" >
+        INSERT INTO customer_detail
+        VALUES(#{custId},#{custAddress},#{custRegion},#{custZip},#{custWebsite},#{custLicence},
+        #{custCorporation},#{custCapital},#{custBank},#{custPic},#{custMemo})
+    </insert>
+
+
+    <!-- 根据客户id删除客户的详细信息 -->
+    <delete id="deleteCustomerDetailById" parameterType="int" >
+        DELETE FROM customer_detail WHERE cust_id = #{value}
+    </delete>
+
+
+    <!-- 修改客户的详细信息 -->
+    <update id="updateCustomerDetail" parameterType="CustomerDetail">
+        UPDATE customer_detail
+        SET cust_address=#{custAddress},cust_region=#{custRegion},cust_zip=#{custZip},
+        cust_website=#{custWebsite},cust_licence=#{custLicence},cust_corporation=#{custCorporation},
+        cust_capital=#{custCapital},cust_bank=#{custBank},cust_pic=#{custPic},cust_memo=#{custMemo}
+        WHERE cust_id = #{custId}
+    </update>
+
+</mapper>
