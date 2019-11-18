@@ -48,17 +48,32 @@
                         $("#custIndustry").attr("value", data["custIndustry"]["value"]);
                     }
                 });
-            }else{
+            } else {
                 $("#phoneMessage").css("visibility", "visible");
             }
         }
 
+        function getCurrentDate() {
+            var date = new Date();
+            var month = date.getMonth() + 1;
+            var strDate = date.getDate();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            var currentDate = date.getFullYear() + "-" + month + "-" + strDate + " " + date.getHours()
+                + ":" + date.getMinutes() + ":" + date.getSeconds();
+
+            $("#visitDate").attr("value", currentDate);
+        }
     </script>
 
 
     <META content="MSHTML 6.00.2900.3492" name=GENERATOR>
 </HEAD>
-<BODY>
+<BODY onload="getCurrentDate()">
 <FORM id=form1 name=form1
       action="${pageContext.request.contextPath }/visit/insertVisit.action"
       method=post>
@@ -97,15 +112,15 @@
                         <td><input type="text" id="visitPhone" class="textbox" name="visitPhone" placeholder="请输入手机号"/>
                         </td>
                         <td>客户拜访时间：</td>
-                        <td><input class="textbox" name="visitDate" readonly="readonly"
-                                   value="<%=new Date().toLocaleString()%>"/></td>
+                        <td><input id="visitDate" class="textbox" name="visitDate" readonly="readonly"
+                        /></td>
                         <td id="getVisitCustomer">
                             <INPUT class=button id=sButton1 type=button onclick="getVisitCustomer()"
                                    value=" 查询 " name=sButton2>
                         </td>
                         <td>
                             <span id="phoneMessage" type="text"
-                            style="visibility:hidden;color:darkred">手机格式错误</span>
+                                  style="visibility:hidden;color:darkred">手机格式错误</span>
                         </td>
                     </tr>
                     <table id="visitCustomerTable" cellSpacing=0 cellPadding=5 border=0 style="visibility:hidden">

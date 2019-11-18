@@ -14,9 +14,10 @@
 </head>
 <body style="height: 100%; margin: 0">
 
-<div id="sourceContainer" style="height: 100%"></div>
+<div id="Container"  style="height: 100%; "></div>
 
-<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+<%--<script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>--%>
+<script type="text/javascript" src="${pageContext.request.contextPath }/js/echarts-en.min.js"></script>
 <script type="text/javascript">
     var legendData = new Array();
     var seriesData = [];
@@ -27,11 +28,12 @@
         legendData.push("${statisticMap['statisticKey']}");
         seriesData.push(json);
     </c:forEach>
-    var dom = document.getElementById("sourceContainer");
+    var dom = document.getElementById("Container");
     var myChart = echarts.init(dom);
-    var app = {};
-    option = null;
-    option = {
+    // var myChart = require('echarts').init(dom);
+    // var app = {};
+    // option = null;
+    var option = {
         title : {
             text: '${typeName}统计',
             // subtext: '纯属虚构',

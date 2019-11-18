@@ -78,7 +78,7 @@
 							<tr>
 								<td>联系人姓名：</td>
 								<td>
-									<input type="text" id="linkman.linkName" name="linkman.linkName" style="WIDTH: 180px"/>
+									<input type="text" id="linkman.linkName" name="linkman.linkName" style="WIDTH: 180px"/>  <span style="color: red">*</span>
 								</td>
 								<td>联系人性别：</td>
 								<td>
@@ -90,22 +90,22 @@
 								<td>联系人账号：</td>
 								<td>
 									<INPUT class=textbox id="user.userAccount"
-										   style="WIDTH: 180px" maxLength=50 name="user.userAccount">
+										   style="WIDTH: 180px" maxLength=50 name="user.userAccount">  <span style="color: red">*</span>
 								</td>
 								<td>联系人密码：</td>
 								<td>
-									<input type="password" id="user.userPassword" name="user.userPassword" style="WIDTH: 180px"/>
+									<input type="password" id="user.userPassword" name="user.userPassword" style="WIDTH: 180px"/>  <span style="color: red">*</span>
 								</td>
 							</TR>
 							<TR>
 								<td>联系人手机：</td>
 								<td>
 								<INPUT class=textbox id="linkPhone"
-														style="WIDTH: 180px" maxLength=50 name="linkman.linkPhone">
+														style="WIDTH: 180px" maxLength=50 name="linkman.linkPhone">  <span style="color: red">*</span>
 								</td>
 								<td>联系人邮箱：</td>
 								<td>
-									<input type="text" name="linkman.linkEmail" style="WIDTH: 180px"/>
+									<input type="text" name="linkman.linkEmail" style="WIDTH: 180px"/>  <span style="color: red">*</span>
 								</td>
 							</TR>
 							<TR>

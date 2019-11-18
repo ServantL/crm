@@ -1,8 +1,10 @@
 package cn.servant.crm.utils;
 
 
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -42,5 +44,22 @@ public class DefaultCustomerPicUtil {
         // 关闭画笔资源
         graphics.dispose();
         return bufferedImage;
+    }
+
+
+    /**
+     * 生成图片存放的绝对磁盘路径
+     * @param request
+     * @return
+     */
+    public static  String getPicRealPath(HttpServletRequest request) {
+        String realPath = request.getServletContext().getRealPath("/");
+        String picPath;
+        if (StringUtils.isEmpty(realPath)) {
+            picPath = "/root/apache-tomcat-8.5.47/webapps/pic" + request.getContextPath() + "/"  ;
+        } else {
+            picPath = realPath.substring(0, realPath.indexOf(request.getContextPath().substring(1))) + "/pic" + request.getContextPath() + "/"  ;
+        }
+        return picPath;
     }
 }

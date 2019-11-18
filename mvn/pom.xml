@@ -41,19 +41,31 @@
                             <maxIdleTime>30000</maxIdleTime>
                         </connector>
                     </connectors>
-                    <webAppSourceDirectory>${project.build.directory}/${pom.artifactId}-${pom.version}</webAppSourceDirectory>
+                    <webAppSourceDirectory>${project.build.directory}/${project.artifactId}-${project.version}</webAppSourceDirectory>
                     <contextPath>/</contextPath>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
                 <configuration>
                     <source>8</source>
                     <target>8</target>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.4.2</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
         </plugins>
+
 
         <resources>
             <resource>
@@ -64,7 +76,11 @@
                 </includes>
             </resource>
             <resource>
-                <directory>/src/main/resources</directory>
+                <directory>src/main/resources</directory>
+                <!--<includes>-->
+                    <!--<include>**/*.properties</include>-->
+                    <!--<include>**/*.xml</include>-->
+                <!--</includes>-->
             </resource>
         </resources>
     </build>
@@ -216,7 +232,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>RELEASE</version>
+            <version>5.6.0-M1</version>
             <scope>compile</scope>
         </dependency>
 

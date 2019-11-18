@@ -6,6 +6,7 @@
 <TITLE>客户管理系统</TITLE>
 <META http-equiv=Content-Type content="text/html; charset=utf-8">
 <META content="MSHTML 6.00.2900.3492" name=GENERATOR>
+	<link rel="icon" href="images/icon.png"/>
 </HEAD>
 <FRAMESET frameSpacing=0 rows=80,* frameBorder=0>
 	<FRAME name="top_frame" id="top_frame" src="top.jsp" frameBorder=0 noResize

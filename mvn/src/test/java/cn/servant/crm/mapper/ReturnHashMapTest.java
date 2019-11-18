@@ -34,12 +34,12 @@ public class ReturnHashMapTest {
 
     @Test
     public void selectTest1() throws Exception {
-        CustomerBasicMapper customerBasicMapper = (CustomerBasicMapper) applicationContext.getBean("customerBasicMapper");
-        Map<Object, Object> map = new HashMap<Object, Object>();
-        map.put("1", "2");
-        CustomerBasic customerBasic = customerBasicMapper.selectTest1(map);
+//        CustomerBasicMapper customerBasicMapper = (CustomerBasicMapper) applicationContext.getBean("customerBasicMapper");
+//        Map<Object, Object> map = new HashMap<Object, Object>();
+//        map.put("1", "2");
+//        CustomerBasic customerBasic = customerBasicMapper.selectTest1(map);
 //        Map baseMap = customerBasic.getTestSource();
-        System.out.println(map);
+//        System.out.println(map);
     }
 
 

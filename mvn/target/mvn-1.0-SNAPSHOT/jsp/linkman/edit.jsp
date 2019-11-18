@@ -15,6 +15,10 @@
         function updateSubmit() {
             var phone = $("#linkPhone").val();
             if (/^[1][3,4,5,7,8][0-9]{9}$/.test(phone)) {
+                if ('${linkman.linkPhone}' == phone) {
+                    updateLinkman();
+                    return;
+                }
                 $.ajax({
                     type: 'post',
                     url: '${pageContext.request.contextPath}/linkman/selectLinkmanIdByPhone.action',
@@ -24,25 +28,7 @@
                         if (data == 'exist') {
                             alert("该手机号码已存在");
                         } else {
-                            var params = $("#form1").serializeArray();
-                            var jsonData = [];
-                            for (var i = 0; i < params.length; i++) {
-                                var json = {};
-                                json.name = params[i].name;
-                                json.value = params[i].value;
-                                jsonData.push(json);
-                            }
-                            $.ajax({
-                                type: 'post',
-                                url: '${pageContext.request.contextPath}/linkman/updateLinkman.action',
-                                data: jsonData,
-                                success: function (data) {
-                                    if (data == 'success') {
-                                        window.location.href = '${pageContext.request.contextPath}/jsp/success.jsp';
-                                        window.top.top_frame.location.reload();
-                                    }
-                                }
-                            });
+                            updateLinkman();
                         }
                     }
                 });
@@ -50,6 +36,28 @@
                 alert("该手机号码格式不符")
                 return false;
             }
+        }
+
+        function updateLinkman(){
+            var params = $("#form1").serializeArray();
+            var jsonData = [];
+            for (var i = 0; i < params.length; i++) {
+                var json = {};
+                json.name = params[i].name;
+                json.value = params[i].value;
+                jsonData.push(json);
+            }
+            $.ajax({
+                type: 'post',
+                url: '${pageContext.request.contextPath}/linkman/updateLinkman.action',
+                data: jsonData,
+                success: function (data) {
+                    if (data == 'success') {
+                        window.location.href = '${pageContext.request.contextPath}/jsp/success.jsp';
+                        window.top.top_frame.location.reload();
+                    }
+                }
+            });
         }
     </script>
 
@@ -93,7 +101,7 @@
                         <td>联系人姓名：</td>
                         <td>
                             <input type="text" id="linkName" name="linkName" style="WIDTH: 180px"
-                                   value="${linkman.linkName}"/>
+                                   value="${linkman.linkName}"/>  <span style="color: red">*</span>
                         </td>
                         <td>联系人性别：</td>
                         <td>
@@ -112,11 +120,11 @@
                         <td>联系人手机：</td>
                         <td>
                             <INPUT class=textbox id="linkPhone"
-                                   style="WIDTH: 180px" maxLength=50 name="linkPhone" value="${linkman.linkPhone}">
+                                   style="WIDTH: 180px" maxLength=50 name="linkPhone" value="${linkman.linkPhone}">  <span style="color: red">*</span>
                         </td>
                         <td>联系人邮箱：</td>
                         <td>
-                            <input type="text" name="linkEmail" style="WIDTH: 180px" value="${linkman.linkEmail}"/>
+                            <input type="text" name="linkEmail" style="WIDTH: 180px" value="${linkman.linkEmail}"/>  <span style="color: red">*</span>
                         </td>
                     </TR>
                     <TR>

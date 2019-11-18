@@ -13,6 +13,7 @@ import cn.servant.crm.utils.DefaultCustomerPicUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 import org.springframework.validation.annotation.Validated;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +88,7 @@ public class CustomerController {
      * @return
      */
     @RequestMapping("/insertCustomer")
-    public String insertCustomer(Model model,@Validated Customer customer, BindingResult bindingResult, MultipartFile pictureFile) throws Exception {
+    public String insertCustomer(HttpServletRequest request,Model model,@Validated Customer customer, BindingResult bindingResult, MultipartFile pictureFile) throws Exception {
         // 判断是否有校验错误信息
         if (bindingResult.hasErrors()) {
 //            Map map = bindingResult.getModel();
@@ -101,10 +103,10 @@ public class CustomerController {
             // 获取图片的原名称
             String originalFilename = pictureFile.getOriginalFilename();
             // 存放图片的绝对磁盘路径
-            String picPath = "D:\\IntelliJ IDEA 2018.3\\pic\\crm\\";
+            String picPath = DefaultCustomerPicUtil.getPicRealPath(request);
             if (originalFilename != null && originalFilename.length() > 0) {
                 // 新图片的名称
-                String newFilename = UUID.randomUUID() + originalFilename.substring(originalFilename.lastIndexOf("."));
+                String newFilename =  UUID.randomUUID() + originalFilename.substring(originalFilename.lastIndexOf("."));
                 // 新图片，new File（图片路径）
                 File newFile = new File(picPath + newFilename);
                 // 将原图片拷贝到新图片中
@@ -221,7 +223,7 @@ public class CustomerController {
      * @return
      */
     @RequestMapping("/updateCustomer")
-    public String updateCustomer(Model model,@Validated  Customer customer,BindingResult bindingResult, MultipartFile pictureFile) throws Exception {
+    public String updateCustomer(HttpServletRequest request ,Model model,@Validated  Customer customer,BindingResult bindingResult, MultipartFile pictureFile) throws Exception {
         // 判断是否有校验错误信息
         if (bindingResult.hasErrors()) {
 //            Map map = bindingResult.getModel();
@@ -236,7 +238,7 @@ public class CustomerController {
             String originalFilename = pictureFile.getOriginalFilename();
             if (originalFilename != null && originalFilename.length() > 0) {
                 // 存储图片的物理磁盘路径
-                String picPath = "D:\\IntelliJ IDEA 2018.3\\pic\\crm\\";
+                String picPath = DefaultCustomerPicUtil.getPicRealPath(request);
                 // 如果原先有图片，则将原图片删除，因为custpic记录的是图片的名称，所以要还原成路径
                 String formerFilename = customer.getCustomerDetail().getCustPic();
                 if (formerFilename != null && formerFilename.length() > 0) {
@@ -244,7 +246,7 @@ public class CustomerController {
                     formerFile.delete();
                 }
                 // 图片的新名称，随机UUID + 原名称的后缀
-                String newFilename = UUID.randomUUID() + originalFilename.substring(originalFilename.lastIndexOf('.'));
+                String newFilename =  UUID.randomUUID() + originalFilename.substring(originalFilename.lastIndexOf('.'));
                 // 新图片，路径 + 名称
                 File newFile = new File(picPath + newFilename);
                 // 将pictureFile的数据写到newFile中，即该操作实则为保存图片的操作
@@ -257,21 +259,22 @@ public class CustomerController {
         return "success";
     }
 
+
     /**
      * 修改图片时如果有换新的，则将老的删除，
      * 在页面的时候，当选择图片时，使用js将显示图片的img更改
      */
     @RequestMapping("/refreshPicture")
     @ResponseBody
-    public String refreshPicture(MultipartFile pictureFile,String imgPath) throws IOException {
+    public String refreshPicture(MultipartFile pictureFile,String imgPath,HttpServletRequest request) throws IOException {
         // 同一将临时图片命名为temp + 原名称后缀
-        String newFilename = "";
+            String newFilename = "";
         // 对图片进行处理
         if (pictureFile != null) {
             String originalFilename = pictureFile.getOriginalFilename();
             if (originalFilename != null && originalFilename.length() != 0) {
                 // 存储图片的磁盘路径
-                String picPath = "D:\\IntelliJ IDEA 2018.3\\pic\\crm\\";
+                String picPath = DefaultCustomerPicUtil.getPicRealPath(request);
                 // 图片的新名称，temp + 原名称的后缀
 //            if (imgPath != null && imgPath.length() > 0 && "temp".equals(imgPath.substring(imgPath.lastIndexOf('/') + 1, imgPath.lastIndexOf('.')))) {
 //                    newFilename = "casual" + originalFilename.substring(originalFilename.lastIndexOf('.'));
@@ -303,4 +306,5 @@ public class CustomerController {
         }
         return "exist";
     }
+
 }
